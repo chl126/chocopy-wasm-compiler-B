@@ -2,15 +2,6 @@ import {BasicREPL} from './repl';
 import { Type, Value } from './ast';
 import { defaultTypeEnv } from './type-check';
 import { NUM, BOOL, NONE } from './utils';
-import { jsopen, jsclose, jsread, jswrite } from './io';
-import { isJsxAttribute } from 'typescript';
-
-declare global {
-  interface Window { 
-    duplicated: any,
-    fs: any
-  }
-}
 
 function stringify(typ: Type, arg: any) : string {
   switch(typ.tag) {
@@ -40,19 +31,8 @@ function assert_not_none(arg: any) : any {
 }
 
 function webStart() {
-  // create the filesystem
-  window.duplicated = Object.create(window) // the overcome the __dirname problem
-  const BrowserFS = require("browserfs");
-  BrowserFS.install(window.duplicated);
-  BrowserFS.configure({ fs: "LocalStorage" }, (err: any) => {
-    if (err) {
-      alert(err);
-    } else {
-      window.fs =  window.duplicated.require('fs');
-    }
-  });
-
   document.addEventListener("DOMContentLoaded", async function() {
+
     // https://github.com/mdn/webassembly-examples/issues/5
 
     const memory = new WebAssembly.Memory({initial:10, maximum:100});
@@ -71,11 +51,7 @@ function webStart() {
         abs: Math.abs,
         min: Math.min,
         max: Math.max,
-        pow: Math.pow,
-        jsopen: (arg: number) => jsopen(arg),
-        jsclose: (arg: number) => jsclose(arg),
-        jsread: (arg: number) => jsread(arg),
-        jswrite: (fd : number, content : number) => jswrite(fd, content)
+        pow: Math.pow
       },
       libmemory: memoryModule.instance.exports,
       memory_values: memory,
